@@ -651,9 +651,10 @@ class StreamduckClient {
 
 /**
  * Initializes a new Unix Domain Socket based Streamduck client
+ * @param {number} [timeout=5000] Request timeout time
  * @returns {Promise<StreamduckClient>} 
  */
-exports.newUnixClient = function() {
+exports.newUnixClient = function(timeout = 5000) {
     return new Promise((resolve, reject) => {
         let protocol = {
             pool: {}
@@ -702,7 +703,7 @@ exports.newUnixClient = function() {
             return new Promise((resolve, reject) => {
                 let timer = setTimeout(() => {
                     reject("Request timed out")
-                }, 5000)
+                }, timeout)
     
                 protocol.pool[requester] = function(data) {
                     clearTimeout(timer);
