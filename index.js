@@ -23,7 +23,7 @@ class StreamduckClient {
 
     /**
      * Retrieves device list currently recognized by daemon
-     * @returns {Promise<{device_type: string, serial_number: string, managed: boolean, online: boolean}[]>} Device list
+     * @returns {Promise<Array.<{device_type: string, serial_number: string, managed: boolean, online: boolean}>>} Device list
      */
     device_list() {
         return this.protocol.request(
@@ -226,7 +226,7 @@ class StreamduckClient {
 
     /**
      * Lists modules daemon has loaded
-     * @returns {Promise<{name: string, author: string, description: string, version: string, used_features: string[][]}[]>} Module list 
+     * @returns {Promise<Array.<{name: string, author: string, description: string, version: string, used_features: Array.<Array.<string>>}>>} Module list 
      */
     list_modules() {
         return this.protocol.request(
@@ -251,7 +251,7 @@ class StreamduckClient {
     /**
      * Retrieves module values of specified module
      * @param {string} module_name Module name
-     * @returns {Promise<?{name: string, display_name: string, ty: Object, value: Object}[]>} Module values, null if module wasn't found
+     * @returns {Promise<?Array.<{name: string, display_name: string, ty: Object, value: Object}>>} Module values, null if module wasn't found
      */
     get_module_values(module_name) {
         this.protocol.request(
@@ -273,7 +273,7 @@ class StreamduckClient {
     /**
      * Sets module values for specified module
      * @param {string} module_name Module name
-     * @param {{name: string, display_name: string, ty: Object, value: Object}[]} value Array of values
+     * @param {Array.<{name: string, display_name: string, ty: Object, value: Object}>} value Array of values
      * @returns {Promise<"ModuleNotFound"|"Set">} Result of the operation
      */
     set_module_value(module_name, value) {
@@ -291,7 +291,7 @@ class StreamduckClient {
     /**
      * Gets screen stack of specified device
      * @param {string} serial_number Serial number of the device
-     * @returns {Promise<Object.<string, Object>[]>} Screen stack array, null if device wasn't found
+     * @returns {Promise<Array.<Object.<string, Object>>>} Screen stack array, null if device wasn't found
      */
     get_stack(serial_number) {
         return this.protocol.request(
@@ -357,7 +357,7 @@ class StreamduckClient {
     }
 
     /**
-     * Sets button on current screen for specified device
+     * Sets button on current screen for specified device, commit the change later with commit_changes in order for this to get saved
      * @param {string} serial_number Serial number of the device
      * @param {number} key Index of the key (0-255)
      * @param {Object} button Button object
@@ -377,7 +377,7 @@ class StreamduckClient {
     }
 
     /**
-     * Clears button from current screen for specified device
+     * Clears button from current screen for specified device, commit the change later with commit_changes in order for this to get saved
      * @param {string} serial_number Serial number of the device
      * @param {number} key Index of the key (0-255)
      * @returns {Promise<"DeviceNotFound"|"FailedToClear"|"Cleared">} Result of the operation
@@ -395,7 +395,7 @@ class StreamduckClient {
     }
 
     /**
-     * Creates a new empty button
+     * Creates a new empty button, commit the change later with commit_changes in order for this to get saved
      * @param {string} serial_number Serial number of the device
      * @param {number} key Index of the key (0-255)
      * @returns {Promise<"DeviceNotFound"|"FailedToCreate"|"Created">} Result of the operation
@@ -413,7 +413,7 @@ class StreamduckClient {
     }
 
     /**
-     * Creates a new button from component
+     * Creates a new button from component, commit the change later with commit_changes in order for this to get saved
      * @param {string} serial_number Serial number of the device
      * @param {number} key Index of the key (0-255)
      * @param {string} component_name Component name
@@ -433,7 +433,7 @@ class StreamduckClient {
     }
 
     /**
-     * Adds component onto a button
+     * Adds component onto a button, commit the change later with commit_changes in order for this to get saved
      * @param {string} serial_number Serial number of the device
      * @param {number} key Index of the key (0-255)
      * @param {string} component_name Component name
@@ -457,7 +457,7 @@ class StreamduckClient {
      * @param {string} serial_number Serial number of the device
      * @param {number} key Index of the key (0-255)
      * @param {string} component_name Component name
-     * @returns {Promise<?{name: string, display_name: string, ty: Object, value: Object}[]>} Component values, null if component or device wasn't found
+     * @returns {Promise<?Array.<{name: string, display_name: string, ty: Object, value: Object}>>} Component values, null if component or device wasn't found
      */
     get_component_values(serial_number, key, component_name) {
         return this.protocol.request(
@@ -479,11 +479,11 @@ class StreamduckClient {
     }
 
     /**
-     * Sets component values for a component on a button
+     * Sets component values for a component on a button, commit the change later with commit_changes in order for this to get saved
      * @param {string} serial_number Serial number of the device
      * @param {number} key Index of the key (0-255)
      * @param {string} component_name Component name
-     * @param {{name: string, display_name: string, ty: Object, value: Object}[]} value Array of values
+     * @param {Array.<{name: string, display_name: string, ty: Object, value: Object}>} value Array of values
      * @returns {Promise<"DeviceNotFound"|"FailedToGet"|"Set">} Result of the operation
      */
     set_component_value(serial_number, key, component_name, value) {
@@ -501,7 +501,7 @@ class StreamduckClient {
     }
 
     /**
-     * Removes component from a button
+     * Removes component from a button, commit the change later with commit_changes in order for this to get saved
      * @param {string} serial_number Serial number of the device
      * @param {number} key Index of the key (0-255)
      * @param {string} component_name Component name 
@@ -670,8 +670,8 @@ exports.newUnixClient = function() {
                 data = data.toString();
                 collected_string += data;
 
-                if(collected_string.includes("\4")) {
-                    collected_string.split("\4").forEach(json => {
+                if(collected_string.includes("\u0004")) {
+                    collected_string.split("\u0004").forEach(json => {
                         if(json) {
                             try {
                                 let obj = JSON.parse(json);
@@ -697,7 +697,7 @@ exports.newUnixClient = function() {
             let requester = randomstring.generate();
             data.requester = requester;
     
-            client.write(JSON.stringify(data) + "\4");
+            client.write(JSON.stringify(data) + "\u0004");
     
             return new Promise((resolve, reject) => {
                 let timer = setTimeout(() => {

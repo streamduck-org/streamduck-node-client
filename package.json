@@ -15,7 +15,7 @@
     "elgato"
   ],
   "author": "TheJebForge",
-  "license": "LGPL-2.0-only",
+  "license": "LGPL-2.1",
   "bugs": {
     "url": "https://github.com/TheJebForge/streamduck-node-client/issues"
   },
