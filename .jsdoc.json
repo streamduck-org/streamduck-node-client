@@ -1,0 +1,15 @@
+{
+	"source": {
+		"include": ["package.json", "Readme.md", "index.js"],
+		"includePattern": ".js$",
+		"excludePattern": "(node_modules/|docs)"
+    	},
+	"opts": {
+		"encoding": "utf8",
+		"readme": "./Readme.md",
+		"destination": "docs/",
+		"recurse": true,
+		"verbose": true,
+		"template": "node_modules/jsdoc-fresh"
+	}
+}
