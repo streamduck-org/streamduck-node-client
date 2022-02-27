@@ -1,29 +1,29 @@
 {
-  "name": "streamduck-node-client",
-  "version": "0.0.2",
-  "description": "NodeJS client for Streamduck project",
-  "main": "index.js",
-  "scripts": {
-    "generate-docs": "node_modules/.bin/jsdoc --configure .jsdoc.json --verbose"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/TheJebForge/streamduck-node-client.git"
-  },
-  "keywords": [
-    "streamduck",
-    "streamdeck",
-    "elgato"
-  ],
-  "author": "TheJebForge",
-  "license": "LGPL-2.1",
-  "bugs": {
-    "url": "https://github.com/TheJebForge/streamduck-node-client/issues"
-  },
-  "homepage": "https://github.com/TheJebForge/streamduck-node-client#readme",
-  "dependencies": {
-    "jsdoc": "^3.6.10",
-    "jsdoc-fresh": "^1.1.1",
-    "randomstring": "^1.2.2"
-  }
+	"name": "streamduck-node-client",
+	"version": "0.0.3",
+	"description": "NodeJS client for Streamduck project",
+	"main": "index.js",
+	"scripts": {
+		"generate-docs": "node_modules/.bin/jsdoc --configure .jsdoc.json --verbose"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/TheJebForge/streamduck-node-client.git"
+	},
+	"keywords": [
+		"streamduck",
+		"streamdeck",
+		"elgato"
+	],
+	"author": "TheJebForge",
+	"license": "LGPL-2.1",
+	"bugs": {
+		"url": "https://github.com/TheJebForge/streamduck-node-client/issues"
+	},
+	"homepage": "https://github.com/TheJebForge/streamduck-node-client#readme",
+	"dependencies": {
+		"jsdoc": "^3.6.10",
+		"jsdoc-fresh": "^1.1.1",
+		"randomstring": "^1.2.2"
+	}
 }
