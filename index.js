@@ -746,7 +746,13 @@ exports.newUnixClient = function (opts) {
 		}
 	}
 
-	protocol.connected = () => client != null;
+	protocol.connected = () => {
+		if (client != null) {
+			return client.readyState == "open";
+		} else {
+			return false;
+		}
+	}
 
 	protocol.destroy = () => {
 		client.destroy();
