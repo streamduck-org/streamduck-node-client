@@ -10,7 +10,7 @@ Following code creates instance of unix client and retrieves device list from St
 ```js
 const streamduck = require('streamduck-node-client');
 
-let client = await streamduck.newUnixClient();
+let client = streamduck.newUnixClient();
 
 await client.device_list()
 ```
