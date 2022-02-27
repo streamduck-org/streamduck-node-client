@@ -659,12 +659,12 @@ class StreamduckClient {
 
 /**
  * Initializes a new Unix Domain Socket based Streamduck client
- * @param {{timeout: number?, reconnect: boolean}} opts Options for client. timeout - Request timeout, default 5000; reconnect - Automatically reconnects to daemon, default true
+ * @param {{timeout: number?, reconnect: boolean?}?} opts Options for client. timeout - Request timeout, default 5000; reconnect - Automatically reconnects to daemon, default true
  * @returns {StreamduckClient} Client that might still be connecting, check with is_connected method
  */
 exports.newUnixClient = function (opts) {
-	let timeout = opts && opts.timeout != undefined ? opts.timeout : 5000;
-	let reconnect = opts && opts.reconnect != undefined ? opts.reconnect : true;
+	let timeout = opts && opts.timeout !== undefined ? opts.timeout : 5000;
+	let reconnect = opts && opts.reconnect !== undefined ? opts.reconnect : true;
 
 	let protocol = {
 		pool: {}
@@ -681,7 +681,7 @@ exports.newUnixClient = function (opts) {
 				let version = await streamduck.version();
 
 				let client_version = "0.1";
-				if (version != client_version)
+				if (version !== client_version)
 					console.log(`Daemon version doesn't match this client's version. Daemon is using ${version}, client is using ${client_version}`);
 
 				console.log("Connected to Streamduck");
@@ -748,7 +748,7 @@ exports.newUnixClient = function (opts) {
 
 	protocol.connected = () => {
 		if (client != null) {
-			return client.readyState == "open";
+			return client.readyState === "open";
 		} else {
 			return false;
 		}
