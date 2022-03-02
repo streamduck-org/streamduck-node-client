@@ -1,6 +1,7 @@
 const net = require('net'),
 	randomstring = require('randomstring');
 
+// noinspection JSUnusedGlobalSymbols
 /**
  * Client class that contains methods for communicating with Streamduck daemon
  */
@@ -233,6 +234,70 @@ class StreamduckClient {
 	}
 
 	/**
+	 * Lists images of specified device
+	 * @param {string} serial_number Serial number of the device
+	 * @returns {Promise<?Object.<string, string>>} Image map, null if device wasn't found
+	 */
+	list_images(serial_number) {
+		return this.protocol.request(
+			{
+				ty: "list_images",
+				data: {
+					serial_number
+				}
+			}
+		).then(data => {
+			if (data.Images) {
+				return data.Images;
+			} else {
+				return null;
+			}
+		})
+	}
+
+	/**
+	 * Adds images of specified device
+	 * @param {string} serial_number Serial number of the device
+	 * @param {string} image_data Image encoded in Base64
+	 * @returns {Promise<?string>} Image identifier, null if invalid image or device wasn't found
+	 */
+	add_image(serial_number, image_data) {
+		return this.protocol.request(
+			{
+				ty: "add_image",
+				data: {
+					serial_number,
+					image_data
+				}
+			}
+		).then(data => {
+			if (data.Added) {
+				return data.Added;
+			} else {
+				return null;
+			}
+		})
+	}
+
+	/**
+	 * Removes images from specified device
+	 * @param {string} serial_number Serial number of the device
+	 * @param {string} image_identifier Image identifier
+	 * @returns {Promise<"NotFound"|"Removed">} Result of the operation
+	 */
+	remove_image(serial_number, image_identifier) {
+		return this.protocol.request(
+			{
+				ty: "remove_image",
+				data: {
+					serial_number,
+					image_identifier
+				}
+			}
+		)
+	}
+
+	/**
 	 * Lists modules daemon has loaded
 	 * @returns {Promise<Array.<{name: string, author: string, description: string, version: string, used_features: Array.<Array.<string>>}>>} Module list 
 	 */
@@ -334,6 +399,28 @@ class StreamduckClient {
 		).then(data => {
 			if (data.Screen) {
 				return data.Screen;
+			} else {
+				return null;
+			}
+		})
+	}
+
+	/**
+	 * Gets current images rendered on specified device
+	 * @param {string} serial_number Serial number of the device
+	 * @returns {Promise<Object.<string, string>>} Map consisting of key indices and base64 png image data
+	 */
+	get_button_images(serial_number) {
+		return this.protocol.request(
+			{
+				ty: "get_button_images",
+				data: {
+					serial_number
+				}
+			}
+		).then(data => {
+			if (data.Images) {
+				return data.Images;
 			} else {
 				return null;
 			}
@@ -725,6 +812,11 @@ exports.newUnixClient = function (opts) {
 			});
 	}
 
+	/**
+	 * Sends request to daemon
+	 * @param data Data to send
+	 * @returns {Promise<Object>} Response
+	 */
 	protocol.request = (data) => {
 		let requester = randomstring.generate();
 		data.requester = requester;
