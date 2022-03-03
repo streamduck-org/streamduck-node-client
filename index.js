@@ -32,7 +32,7 @@ class StreamduckClient {
 
 	/**
 	 * Retrieves device list currently recognized by daemon
-	 * @returns {Promise<Array.<{device_type: string, serial_number: string, managed: boolean, online: boolean}>>} Device list
+	 * @returns {Promise<Array.<{device_type: ("Unknown"|"Mini"|"Original"|"OriginalV2"|"XL"), serial_number: string, managed: boolean, online: boolean}>>} Device list
 	 */
 	device_list() {
 		return this.protocol.request(
@@ -295,6 +295,18 @@ class StreamduckClient {
 				}
 			}
 		)
+	}
+
+	/**
+	 * Lists names of fonts loaded by daemon
+	 * @returns {Promise<Array.<string>>} Font name list
+	 */
+	list_fonts() {
+		return this.protocol.request(
+			{
+				ty: "list_fonts"
+			}
+		).then(data => data.font_names)
 	}
 
 	/**
