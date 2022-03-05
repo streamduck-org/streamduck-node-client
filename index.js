@@ -11,6 +11,23 @@ class StreamduckClient {
 	}
 
 	/**
+	 * Button object
+	 * @typedef {Object.<string, any>} Button
+	 */
+
+	/**
+	 * Panel object
+	 * @typedef {{display_name: string, data: any, buttons: Object.<string, Button>}} Panel
+	 */
+
+	/**
+	 * Device Config object
+	 * @typedef {{vid: number, pid: number, serial: string, brightness: number, layout: Panel, images: Object.<string, string>, plugin_data: Object.<string, any>}} DeviceConfig
+	 */
+
+
+
+	/**
 	 * Checks if protocol is currently connected to daemon
 	 * @returns {boolean} Connection status
 	 */
@@ -32,7 +49,7 @@ class StreamduckClient {
 
 	/**
 	 * Retrieves device list currently recognized by daemon
-	 * @returns {Promise<Array.<{device_type: ("Unknown"|"Mini"|"Original"|"OriginalV2"|"XL"), serial_number: string, managed: boolean, online: boolean}>>} Device list
+	 * @returns {Promise<Array.<{device_type: ("Unknown"|"Mini"|"Original"|"OriginalV2"|"XL"|"MK2"), serial_number: string, managed: boolean, online: boolean}>>} Device list
 	 */
 	device_list() {
 		return this.protocol.request(
@@ -45,7 +62,7 @@ class StreamduckClient {
 	/**
 	 * Retrieves data of specific device
 	 * @param {string} serial_number Serial number of the device
-	 * @returns {Promise<?{device_type: string, serial_number: string, managed: boolean, online: boolean}>} Device Data, null if device wasn't found
+	 * @returns {Promise<?{device_type: ("Unknown"|"Mini"|"Original"|"OriginalV2"|"XL"|"MK2"), serial_number: string, managed: boolean, online: boolean}>} Device Data, null if device wasn't found
 	 */
 	get_device(serial_number) {
 		return this.protocol.request(
@@ -155,7 +172,7 @@ class StreamduckClient {
 	/**
 	 * Gets device config of specified device
 	 * @param {string} serial_number Serial number of the device
-	 * @returns {Promise<?{vid: number, pid: number, serial: string, brightness: number, layout: Object}>} Device config, null if device wasn't found
+	 * @returns {Promise<?DeviceConfig>} Device config, null if device wasn't found
 	 */
 	get_device_config(serial_number) {
 		return this.protocol.request(
@@ -336,7 +353,7 @@ class StreamduckClient {
 	/**
 	 * Retrieves module values of specified module
 	 * @param {string} module_name Module name
-	 * @returns {Promise<?Array.<{name: string, display_name: string, ty: Object, value: Object}>>} Module values, null if module wasn't found
+	 * @returns {Promise<?Array.<{name: string, display_name: string, ty: any, value: any}>>} Module values, null if module wasn't found
 	 */
 	get_module_values(module_name) {
 		this.protocol.request(
@@ -358,7 +375,7 @@ class StreamduckClient {
 	/**
 	 * Sets module values for specified module
 	 * @param {string} module_name Module name
-	 * @param {Array.<{name: string, display_name: string, ty: Object, value: Object}>} value Array of values
+	 * @param {Array.<{name: string, display_name: string, ty: any, value: any}>} value Array of values
 	 * @returns {Promise<"ModuleNotFound"|"Set">} Result of the operation
 	 */
 	set_module_value(module_name, value) {
@@ -376,7 +393,7 @@ class StreamduckClient {
 	/**
 	 * Gets screen stack of specified device
 	 * @param {string} serial_number Serial number of the device
-	 * @returns {Promise<Array.<Object.<string, Object>>>} Screen stack array, null if device wasn't found
+	 * @returns {Promise<?Array.<Panel>>} Screen stack array, null if device wasn't found
 	 */
 	get_stack(serial_number) {
 		return this.protocol.request(
@@ -398,7 +415,7 @@ class StreamduckClient {
 	/**
 	 * Gets current screen of specified device
 	 * @param {string} serial_number Serial number of the device
-	 * @returns {Promise<Object.<string, Object>>} Screen consisting of key indices and button objects, null if device wasn't found
+	 * @returns {Promise<?Panel>} Screen consisting of key indices and button objects, null if device wasn't found
 	 */
 	get_current_screen(serial_number) {
 		return this.protocol.request(
@@ -420,7 +437,7 @@ class StreamduckClient {
 	/**
 	 * Gets current images rendered on specified device
 	 * @param {string} serial_number Serial number of the device
-	 * @returns {Promise<Object.<string, string>>} Map consisting of key indices and base64 png image data
+	 * @returns {Promise<?Object.<string, string>>} Map consisting of key indices and base64 png image data, null if device wasn't found
 	 */
 	get_button_images(serial_number) {
 		return this.protocol.request(
@@ -443,7 +460,7 @@ class StreamduckClient {
 	 * Retrieves button from current screen of specified device
 	 * @param {string} serial_number Serial number of the device
 	 * @param {number} key Index of the key (0-255)
-	 * @returns {Promise<Object>} Button object, null if device or button wasn't found
+	 * @returns {Promise<?Button>} Button object, null if device or button wasn't found
 	 */
 	get_button(serial_number, key) {
 		return this.protocol.request(
@@ -467,7 +484,7 @@ class StreamduckClient {
 	 * Sets button on current screen for specified device, commit the change later with commit_changes in order for this to get saved
 	 * @param {string} serial_number Serial number of the device
 	 * @param {number} key Index of the key (0-255)
-	 * @param {Object} button Button object
+	 * @param {Button} button Button object
 	 * @returns {Promise<"NoScreen"|"DeviceNotFound"|"Set">} Result of the operation
 	 */
 	set_button(serial_number, key, button) {
@@ -564,7 +581,7 @@ class StreamduckClient {
 	 * @param {string} serial_number Serial number of the device
 	 * @param {number} key Index of the key (0-255)
 	 * @param {string} component_name Component name
-	 * @returns {Promise<?Array.<{name: string, display_name: string, ty: Object, value: Object}>>} Component values, null if component or device wasn't found
+	 * @returns {Promise<?Array.<{name: string, display_name: string, ty: any, value: any}>>} Component values, null if component or device wasn't found
 	 */
 	get_component_values(serial_number, key, component_name) {
 		return this.protocol.request(
@@ -590,7 +607,7 @@ class StreamduckClient {
 	 * @param {string} serial_number Serial number of the device
 	 * @param {number} key Index of the key (0-255)
 	 * @param {string} component_name Component name
-	 * @param {Array.<{name: string, display_name: string, ty: Object, value: Object}>} value Array of values
+	 * @param {Array.<{name: string, display_name: string, ty: any, value: any}>} value Array of values
 	 * @returns {Promise<"DeviceNotFound"|"FailedToGet"|"Set">} Result of the operation
 	 */
 	set_component_value(serial_number, key, component_name, value) {
@@ -662,7 +679,7 @@ class StreamduckClient {
 	}
 
 	/**
-	 * Pops a screen from device's screen stack, bypassing limit of pop_screen
+	 * Pops a screen from device's screen stack, bypassing limit of pop_screen, use this only if you know what you're doing
 	 * @param {string} serial_number Serial number of the device
 	 * @returns {Promise<"DeviceNotFound"|"Popped">} Result of the operation
 	 */
@@ -680,7 +697,7 @@ class StreamduckClient {
 	/**
 	 * Replaces current screen with new one
 	 * @param {string} serial_number Serial number of the device
-	 * @param {Object.<string, Object>} screen Screen object consisting of key indices and button objects
+	 * @param {Panel} screen Screen object consisting of key indices and button objects
 	 * @returns {Promise<"DeviceNotFound"|"Replaced">} Result of the operation
 	 */
 	replace_screen(serial_number, screen) {
@@ -698,7 +715,7 @@ class StreamduckClient {
 	/**
 	 * Resets stack and pushes a screen
 	 * @param {string} serial_number Serial number of the device
-	 * @param {Object.<string, Object>} screen Screen object consisting of key indices and button objects
+	 * @param {Panel} screen Screen object consisting of key indices and button objects
 	 * @returns {Promise<"DeviceNotFound"|"Reset">} Result of the operation
 	 */
 	reset_stack(serial_number, screen) {
@@ -708,6 +725,22 @@ class StreamduckClient {
 				data: {
 					serial_number,
 					screen
+				}
+			}
+		)
+	}
+
+	/**
+	 * Resets stack and pushes a screen
+	 * @param {string} serial_number Serial number of the device
+	 * @returns {Promise<"DeviceNotFound"|"Dropped">} Result of the operation
+	 */
+	drop_stack_to_root(serial_number) {
+		return this.protocol.request(
+			{
+				ty: "drop_stack_to_root",
+				data: {
+					serial_number
 				}
 			}
 		)

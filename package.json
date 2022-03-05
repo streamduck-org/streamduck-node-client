@@ -1,6 +1,6 @@
 {
 	"name": "streamduck-node-client",
-	"version": "0.0.8",
+	"version": "0.0.9",
 	"description": "NodeJS client for Streamduck project",
 	"main": "index.js",
 	"scripts": {
