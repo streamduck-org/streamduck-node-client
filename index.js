@@ -413,6 +413,28 @@ class StreamduckClient {
 	}
 
 	/**
+	 * Gets screen stack names of specified device
+	 * @param {string} serial_number Serial number of the device
+	 * @returns {Promise<?Array.<string>>} Screen stack name array, null if device wasn't found
+	 */
+	get_stack_names(serial_number) {
+		return this.protocol.request(
+			{
+				ty: "get_stack_names",
+				data: {
+					serial_number
+				}
+			}
+		).then(data => {
+			if (data.Stack) {
+				return data.Stack;
+			} else {
+				return null;
+			}
+		})
+	}
+
+	/**
 	 * Gets current screen of specified device
 	 * @param {string} serial_number Serial number of the device
 	 * @returns {Promise<?Panel>} Screen consisting of key indices and button objects, null if device wasn't found
