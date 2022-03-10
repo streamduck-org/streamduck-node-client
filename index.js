@@ -16,6 +16,11 @@ class StreamduckClient {
 	 */
 
 	/**
+	 * Value object
+	 * @typedef {{name: string, display_name: string, path: string, ty: any, value: any}} Value
+	 */
+
+	/**
 	 * Panel object
 	 * @typedef {{display_name: string, data: any, buttons: Object.<string, Button>}} Panel
 	 */
@@ -353,7 +358,7 @@ class StreamduckClient {
 	/**
 	 * Retrieves module values of specified module
 	 * @param {string} module_name Module name
-	 * @returns {Promise<?Array.<{name: string, display_name: string, ty: any, value: any}>>} Module values, null if module wasn't found
+	 * @returns {Promise<?Array.<Value>>} Module values, null if module wasn't found
 	 */
 	get_module_values(module_name) {
 		this.protocol.request(
@@ -373,15 +378,53 @@ class StreamduckClient {
 	}
 
 	/**
+	 * Adds element to module setting for specified module
+	 * @param {string} module_name Module name
+	 * @param {string} path Path to setting
+	 * @returns {Promise<"ModuleNotFound"|"FailedToAdd"|"Added">} Result of the operation
+	 */
+	add_module_value(module_name, path) {
+		return this.protocol.request(
+			{
+				ty: "add_module_value",
+				data: {
+					module_name,
+					path
+				}
+			}
+		)
+	}
+
+	/**
+	 * Removes element from module setting for specified module
+	 * @param {string} module_name Module name
+	 * @param {string} path Path to setting
+	 * @param {number} index Index of element
+	 * @returns {Promise<"ModuleNotFound"|"FailedToRemove"|"Removed">} Result of the operation
+	 */
+	remove_module_value(module_name, path, index) {
+		return this.protocol.request(
+			{
+				ty: "remove_module_value",
+				data: {
+					module_name,
+					path,
+					index
+				}
+			}
+		)
+	}
+
+	/**
 	 * Sets module values for specified module
 	 * @param {string} module_name Module name
-	 * @param {Array.<{name: string, display_name: string, ty: any, value: any}>} value Array of values
-	 * @returns {Promise<"ModuleNotFound"|"Set">} Result of the operation
+	 * @param {Value} value Value to set
+	 * @returns {Promise<"ModuleNotFound"|"FailedToSet"|"Set">} Result of the operation
 	 */
 	set_module_value(module_name, value) {
 		return this.protocol.request(
 			{
-				ty: "set_module_values",
+				ty: "set_module_value",
 				data: {
 					module_name,
 					value
@@ -603,7 +646,7 @@ class StreamduckClient {
 	 * @param {string} serial_number Serial number of the device
 	 * @param {number} key Index of the key (0-255)
 	 * @param {string} component_name Component name
-	 * @returns {Promise<?Array.<{name: string, display_name: string, ty: any, value: any}>>} Component values, null if component or device wasn't found
+	 * @returns {Promise<?Array.<Value>>} Component values, null if component or device wasn't found
 	 */
 	get_component_values(serial_number, key, component_name) {
 		return this.protocol.request(
@@ -625,12 +668,58 @@ class StreamduckClient {
 	}
 
 	/**
+	 * Adds element to component value, commit the change later with commit_changes in order for this to get saved
+	 * @param {string} serial_number Serial number of the device
+	 * @param {number} key Index of the key (0-255)
+	 * @param {string} component_name Component name
+	 * @param {string} path Path to value
+	 * @returns {Promise<"DeviceNotFound"|"FailedToAdd"|"Added">} Result of the operation
+	 */
+	add_component_value(serial_number, key, component_name, path) {
+		return this.protocol.request(
+			{
+				ty: "add_component_value",
+				data: {
+					serial_number,
+					key,
+					component_name,
+					path
+				}
+			}
+		)
+	}
+
+	/**
+	 * Removes element from component value, commit the change later with commit_changes in order for this to get saved
+	 * @param {string} serial_number Serial number of the device
+	 * @param {number} key Index of the key (0-255)
+	 * @param {string} component_name Component name
+	 * @param {string} path Path to value
+	 * @param {number} index Index of element
+	 * @returns {Promise<"DeviceNotFound"|"FailedToRemove"|"Removed">} Result of the operation
+	 */
+	remove_component_value(serial_number, key, component_name, path, index) {
+		return this.protocol.request(
+			{
+				ty: "remove_component_value",
+				data: {
+					serial_number,
+					key,
+					component_name,
+					path,
+					index
+				}
+			}
+		)
+	}
+
+	/**
 	 * Sets component values for a component on a button, commit the change later with commit_changes in order for this to get saved
 	 * @param {string} serial_number Serial number of the device
 	 * @param {number} key Index of the key (0-255)
 	 * @param {string} component_name Component name
-	 * @param {Array.<{name: string, display_name: string, ty: any, value: any}>} value Array of values
-	 * @returns {Promise<"DeviceNotFound"|"FailedToGet"|"Set">} Result of the operation
+	 * @param {Value} value Value to set
+	 * @returns {Promise<"DeviceNotFound"|"FailedToSet"|"Set">} Result of the operation
 	 */
 	set_component_value(serial_number, key, component_name, value) {
 		return this.protocol.request(
