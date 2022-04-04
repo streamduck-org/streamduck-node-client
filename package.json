@@ -1,6 +1,6 @@
 {
 	"name": "streamduck-node-client",
-	"version": "0.0.11",
+	"version": "0.0.12",
 	"description": "NodeJS client for Streamduck project",
 	"main": "index.js",
 	"scripts": {
@@ -8,7 +8,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/TheJebForge/streamduck-node-client.git"
+		"url": "git+https://github.com/streamduck-org/streamduck-node-client.git"
 	},
 	"keywords": [
 		"streamduck",
@@ -18,9 +18,9 @@
 	"author": "TheJebForge",
 	"license": "LGPL-2.1",
 	"bugs": {
-		"url": "https://github.com/TheJebForge/streamduck-node-client/issues"
+		"url": "https://github.com/streamduck-org/streamduck-node-client/issues"
 	},
-	"homepage": "https://github.com/TheJebForge/streamduck-node-client#readme",
+	"homepage": "https://github.com/streamduck-org/streamduck-node-client#readme",
 	"dependencies": {
 		"jsdoc": "^3.6.10",
 		"jsdoc-fresh": "^1.1.1",

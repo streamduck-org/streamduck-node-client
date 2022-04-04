@@ -17,7 +17,7 @@ class StreamduckClient {
 
 	/**
 	 * Value object
-	 * @typedef {{name: string, display_name: string, path: string, ty: any, value: any}} Value
+	 * @typedef {{name: string, display_name: string, description: string, path: string, ty: any, value: any}} Value
 	 */
 
 	/**
@@ -584,6 +584,54 @@ class StreamduckClient {
 	}
 
 	/**
+	 * Retrieves clipboard status of daemon
+	 * @returns {Promise<"Empty"|"Full">} Clipboard status, it's either empty or full
+	 */
+	clipboard_status() {
+		return this.protocol.request(
+			{
+				ty: "clipboard_status"
+			}
+		)
+	}
+
+	/**
+	 * Copies button into daemon's clipboard
+	 * @param {string} serial_number Serial number of the device
+	 * @param {number} key Index of the key (0-255)
+	 * @returns {Promise<"DeviceNotFound"|"NoButton"|"Copied">} Result of the operation
+	 */
+	copy_button(serial_number, key) {
+		return this.protocol.request(
+			{
+				ty: "copy_button",
+				data: {
+					serial_number,
+					key
+				}
+			}
+		)
+	}
+
+	/**
+	 * Pastes button from daemon's clipboard
+	 * @param {string} serial_number Serial number of the device
+	 * @param {number} key Index of the key (0-255)
+	 * @returns {Promise<"DeviceNotFound"|"FailedToPaste"|"Pasted">} Result of the operation
+	 */
+	paste_button(serial_number, key) {
+		return this.protocol.request(
+			{
+				ty: "paste_button",
+				data: {
+					serial_number,
+					key
+				}
+			}
+		)
+	}
+
+	/**
 	 * Creates a new empty button, commit the change later with commit_changes in order for this to get saved
 	 * @param {string} serial_number Serial number of the device
 	 * @param {number} key Index of the key (0-255)
@@ -758,7 +806,7 @@ class StreamduckClient {
 	/**
 	 * Pushes a new screen into device's screen stack
 	 * @param {string} serial_number Serial number of the device
-	 * @param {Object.<string, Object>} screen Screen object consisting of key indices and button objects
+	 * @param {Panel} screen Screen object consisting of key indices and button objects
 	 * @returns {Promise<"DeviceNotFound"|"Pushed">} Result of the operation
 	 */
 	push_screen(serial_number, screen) {
