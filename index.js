@@ -31,6 +31,19 @@ class StreamduckClient {
 	 */
 
 
+	/**
+	 * Event listener
+	 * @callback EventListener
+	 * @param {Object} event Event data
+	 */
+
+	/**
+	 * Adds event listener
+	 * @param {EventListener} listener Listener to add
+	 */
+	add_event_listener(listener) {
+		this.protocol.add_event_listener(listener)
+	}
 
 	/**
 	 * Checks if protocol is currently connected to daemon
@@ -502,6 +515,30 @@ class StreamduckClient {
 	/**
 	 * Gets current images rendered on specified device
 	 * @param {string} serial_number Serial number of the device
+	 * @param {number} key Index of the key (0-255)
+	 * @returns {Promise<?string>} Base64 png image data, null if device or button wasn't found
+	 */
+	get_button_image(serial_number, key) {
+		return this.protocol.request(
+			{
+				ty: "get_button_image",
+				data: {
+					serial_number,
+					key
+				}
+			}
+		).then(data => {
+			if (data.Image) {
+				return data.Image;
+			} else {
+				return null;
+			}
+		})
+	}
+
+	/**
+	 * Gets current images rendered on specified device
+	 * @param {string} serial_number Serial number of the device
 	 * @returns {Promise<?Object.<string, string>>} Map consisting of key indices and base64 png image data, null if device wasn't found
 	 */
 	get_button_images(serial_number) {
@@ -958,7 +995,8 @@ exports.newUnixClient = function (opts) {
 	let reconnect = opts && opts.reconnect !== undefined ? opts.reconnect : true;
 
 	let protocol = {
-		pool: {}
+		pool: {},
+		event_listeners: []
 	};
 
 	let collected_string = "";
@@ -986,13 +1024,20 @@ exports.newUnixClient = function (opts) {
 						if (json) {
 							try {
 								let obj = JSON.parse(json);
-								let callback = protocol.pool[obj.requester];
 
-								if (callback) {
-									callback(obj.data);
+								if (obj.ty === "event") {
+									for(const listener of protocol.event_listeners) {
+										listener(obj.data)
+									}
+								} else {
+									let callback = protocol.pool[obj.requester];
+
+									if (callback) {
+										callback(obj.data);
+									}
+
+									delete protocol.pool[obj.requester];
 								}
-
-								delete protocol.pool[obj.requester];
 							} catch (e) {
 
 							}
@@ -1040,6 +1085,10 @@ exports.newUnixClient = function (opts) {
 		} else {
 			return new Promise((_, reject) => reject("Client not connected"));
 		}
+	}
+
+	protocol.add_event_listener = (func) => {
+		protocol.event_listeners.push(func);
 	}
 
 	protocol.connected = () => {
