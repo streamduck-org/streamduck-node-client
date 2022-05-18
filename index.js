@@ -513,7 +513,7 @@ class StreamduckClient {
 	}
 
 	/**
-	 * Gets current images rendered on specified device
+	 * Gets current image rendered on specified device
 	 * @param {string} serial_number Serial number of the device
 	 * @param {number} key Index of the key (0-255)
 	 * @returns {Promise<?string>} Base64 png image data, null if device or button wasn't found
@@ -984,6 +984,57 @@ class StreamduckClient {
 	}
 }
 
+function buildRequestProtocol(opts) {
+	let protocol = {
+		pool: {},
+		event_listeners: []
+	};
+
+	/**
+	 * Sends request to daemon
+	 * @param data Data to send
+	 * @returns {Promise<Object>} Response
+	 */
+	protocol.request = (data) => {
+		let requester = randomstring.generate();
+		data.requester = requester;
+
+		if (opts.client) {
+			opts.client.write(JSON.stringify(data) + "\u0004");
+
+			return new Promise((resolve, reject) => {
+				let timer = setTimeout(() => {
+					reject("Request timed out")
+				}, opts.timeout)
+
+				protocol.pool[requester] = function (data) {
+					clearTimeout(timer);
+					resolve(data)
+				};
+			})
+		} else {
+			return new Promise((_, reject) => reject("Client not connected"));
+		}
+	}
+
+	protocol.add_event_listener = (func) => {
+		protocol.event_listeners.push(func);
+	}
+
+	protocol.connected = () => {
+		if (opts.client != null) {
+			return opts.client.readyState === "open";
+		} else {
+			return false;
+		}
+	}
+
+	protocol.destroy = () => {
+		opts.destroy();
+	}
+
+	return protocol;
+}
 
 /**
  * Initializes a new Unix Domain Socket based Streamduck client
@@ -994,18 +1045,17 @@ exports.newUnixClient = function (opts) {
 	let timeout = opts && opts.timeout !== undefined ? opts.timeout : 5000;
 	let reconnect = opts && opts.reconnect !== undefined ? opts.reconnect : true;
 
-	let protocol = {
-		pool: {},
-		event_listeners: []
+	let protocol_options = {
+		collected_string: "",
+		client: null,
+		timeout: timeout
 	};
 
-	let collected_string = "";
-	let client = null;
-
+	let protocol = buildRequestProtocol(protocol_options);
 	let streamduck = new StreamduckClient(protocol);
 
 	let rec = () => {
-		client = net.createConnection("/tmp/streamduck.sock")
+		protocol_options.client = net.createConnection("/tmp/streamduck.sock")
 			.on('connect', async () => {
 				let version = await streamduck.version();
 
@@ -1017,10 +1067,10 @@ exports.newUnixClient = function (opts) {
 			})
 			.on('data', data => {
 				data = data.toString();
-				collected_string += data;
+				protocol_options.collected_string += data;
 
-				if (collected_string.includes("\u0004")) {
-					collected_string.split("\u0004").forEach(json => {
+				if (protocol_options.collected_string.includes("\u0004")) {
+					protocol_options.collected_string.split("\u0004").forEach(json => {
 						if (json) {
 							try {
 								let obj = JSON.parse(json);
@@ -1044,68 +1094,147 @@ exports.newUnixClient = function (opts) {
 						}
 					});
 
-					collected_string = "";
+					protocol_options.collected_string = "";
 				}
 			})
 			.on('error', _ => {
-				if (client) {
-					client.destroy()
+				if (protocol_options.client) {
+					protocol_options.client.destroy()
 				}
-				client = null;
+				protocol_options.client = null;
 			})
 			.on('close', _ => {
-				if (client) {
-					client.destroy()
+				if (protocol_options.client) {
+					protocol_options.client.destroy()
 				}
-				client = null;
+				protocol_options.client = null;
 			});
-	}
-
-	/**
-	 * Sends request to daemon
-	 * @param data Data to send
-	 * @returns {Promise<Object>} Response
-	 */
-	protocol.request = (data) => {
-		let requester = randomstring.generate();
-		data.requester = requester;
-		if (client) {
-			client.write(JSON.stringify(data) + "\u0004");
-
-			return new Promise((resolve, reject) => {
-				let timer = setTimeout(() => {
-					reject("Request timed out")
-				}, timeout)
-
-				protocol.pool[requester] = function (data) {
-					clearTimeout(timer);
-					resolve(data)
-				};
-			})
-		} else {
-			return new Promise((_, reject) => reject("Client not connected"));
-		}
-	}
-
-	protocol.add_event_listener = (func) => {
-		protocol.event_listeners.push(func);
-	}
-
-	protocol.connected = () => {
-		if (client != null) {
-			return client.readyState === "open";
-		} else {
-			return false;
-		}
-	}
-
-	protocol.destroy = () => {
-		client.destroy();
 	}
 
 	rec();
 	setInterval(() => {
-		if (client == null && reconnect) {
+		if (protocol_options.client == null && reconnect) {
+			rec();
+		}
+	}, 2000);
+
+	return streamduck;
+}
+
+/**
+ * Initializes a new Windows Named Pipes based Streamduck client
+ * @param {{timeout: number?, reconnect: boolean?, events: boolean?}?} opts Options for client. timeout - Request timeout, default 5000; reconnect - Automatically reconnects to daemon, default true; events - Should event connection be made, default true;
+ * @returns {StreamduckClient} Client that might still be connecting, check with is_connected method
+ */
+exports.newWindowsClient = function (opts) {
+	let timeout = opts && opts.timeout !== undefined ? opts.timeout : 5000;
+	let reconnect = opts && opts.reconnect !== undefined ? opts.reconnect : true;
+	let events = opts && opts.events !== undefined ? opts.events : true;
+
+	let protocol_options = {
+		collected_string_request: "",
+		collected_string_event: "",
+		client: null,
+		eventClient: null,
+		timeout: timeout
+	}
+
+	let protocol = buildRequestProtocol(protocol_options);
+	let streamduck = new StreamduckClient(protocol);
+
+	let rec = () => {
+		protocol_options.client = net.connect("\\\\.\\pipe\\streamduck_requests", async () => {
+			let version = await streamduck.version();
+
+			let client_version = "0.1";
+			if (version !== client_version)
+				console.log(`Daemon version doesn't match this client's version. Daemon is using ${version}, client is using ${client_version}`);
+
+			console.log("Connected to Streamduck");
+		})
+			.on('data', data => {
+				data = data.toString();
+				protocol_options.collected_string_request += data;
+
+				if (protocol_options.collected_string_request.includes("\u0004")) {
+					protocol_options.collected_string_request.split("\u0004").forEach(json => {
+						if (json) {
+							try {
+								let obj = JSON.parse(json);
+
+								let callback = protocol.pool[obj.requester];
+
+								if (callback) {
+									callback(obj.data);
+								}
+
+								delete protocol.pool[obj.requester];
+							} catch (e) {
+
+							}
+						}
+					});
+
+					protocol_options.collected_string_request = "";
+				}
+			})
+			.on('error', _ => {
+				if (protocol_options.client) {
+					protocol_options.client.destroy()
+				}
+				protocol_options.client = null;
+			})
+			.on('close', _ => {
+				if (protocol_options.client) {
+					protocol_options.client.destroy()
+				}
+				protocol_options.client = null;
+			});
+
+		if(events) {
+			protocol_options.eventClient = net.connect("\\\\.\\pipe\\streamduck_events")
+				.on('data', data => {
+					data = data.toString();
+					protocol_options.collected_string_event += data;
+
+					if (protocol_options.collected_string_event.includes("\u0004")) {
+						protocol_options.collected_string_event.split("\u0004").forEach(json => {
+							if (json) {
+								try {
+									let obj = JSON.parse(json);
+
+									if (obj.ty === "event") {
+										for (const listener of protocol.event_listeners) {
+											listener(obj.data)
+										}
+									}
+								} catch (e) {
+
+								}
+							}
+						});
+
+						protocol_options.collected_string_event = "";
+					}
+				})
+				.on('error', _ => {
+					if (protocol_options.eventClient) {
+						protocol_options.eventClient.destroy()
+					}
+					protocol_options.eventClient = null;
+				})
+				.on('close', _ => {
+					if (protocol_options.eventClient) {
+						protocol_options.eventClient.destroy()
+					}
+					protocol_options.eventClient = null;
+				});
+		}
+	}
+
+	rec();
+	setInterval(() => {
+		if ((protocol_options.client == null && reconnect) || (protocol_options.eventClient == null && reconnect && events)) {
 			rec();
 		}
 	}, 2000);
