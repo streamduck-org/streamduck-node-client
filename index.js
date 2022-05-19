@@ -253,7 +253,7 @@ class StreamduckClient {
 	/**
 	 * Sets brightness of specified device
 	 * @param {string} serial_number Serial number of the device
-	 * @param {number} brightness Brightness value (integer 0-100 or higher)
+	 * @param {number|string} brightness Brightness value (integer 0-100 or higher)
 	 * @returns {Promise<"DeviceNotFound"|"Set">} Result of the operation 
 	 */
 	set_brightness(serial_number, brightness) {
@@ -262,7 +262,7 @@ class StreamduckClient {
 				ty: "set_brightness",
 				data: {
 					serial_number,
-					brightness
+					brightness: parseInt(brightness)
 				}
 			}
 		)
@@ -412,7 +412,7 @@ class StreamduckClient {
 	 * Removes element from module setting for specified module
 	 * @param {string} module_name Module name
 	 * @param {string} path Path to setting
-	 * @param {number} index Index of element
+	 * @param {number|string} index Index of element
 	 * @returns {Promise<"ModuleNotFound"|"FailedToRemove"|"Removed">} Result of the operation
 	 */
 	remove_module_value(module_name, path, index) {
@@ -422,7 +422,7 @@ class StreamduckClient {
 				data: {
 					module_name,
 					path,
-					index
+					index: parseInt(index)
 				}
 			}
 		)
@@ -515,7 +515,7 @@ class StreamduckClient {
 	/**
 	 * Gets current image rendered on specified device
 	 * @param {string} serial_number Serial number of the device
-	 * @param {number} key Index of the key (0-255)
+	 * @param {number|string} key Index of the key (0-255)
 	 * @returns {Promise<?string>} Base64 png image data, null if device or button wasn't found
 	 */
 	get_button_image(serial_number, key) {
@@ -524,7 +524,7 @@ class StreamduckClient {
 				ty: "get_button_image",
 				data: {
 					serial_number,
-					key
+					key: parseInt(key)
 				}
 			}
 		).then(data => {
@@ -561,7 +561,7 @@ class StreamduckClient {
 	/**
 	 * Retrieves button from current screen of specified device
 	 * @param {string} serial_number Serial number of the device
-	 * @param {number} key Index of the key (0-255)
+	 * @param {number|string} key Index of the key (0-255)
 	 * @returns {Promise<?Button>} Button object, null if device or button wasn't found
 	 */
 	get_button(serial_number, key) {
@@ -570,7 +570,7 @@ class StreamduckClient {
 				ty: "get_button",
 				data: {
 					serial_number,
-					key
+					key: parseInt(key)
 				}
 			}
 		).then(data => {
@@ -585,7 +585,7 @@ class StreamduckClient {
 	/**
 	 * Sets button on current screen for specified device, commit the change later with commit_changes in order for this to get saved
 	 * @param {string} serial_number Serial number of the device
-	 * @param {number} key Index of the key (0-255)
+	 * @param {number|string} key Index of the key (0-255)
 	 * @param {Button} button Button object
 	 * @returns {Promise<"NoScreen"|"DeviceNotFound"|"Set">} Result of the operation
 	 */
@@ -595,7 +595,7 @@ class StreamduckClient {
 				ty: "set_button",
 				data: {
 					serial_number,
-					key,
+					key: parseInt(key),
 					button
 				}
 			}
@@ -605,7 +605,7 @@ class StreamduckClient {
 	/**
 	 * Clears button from current screen for specified device, commit the change later with commit_changes in order for this to get saved
 	 * @param {string} serial_number Serial number of the device
-	 * @param {number} key Index of the key (0-255)
+	 * @param {number|string} key Index of the key (0-255)
 	 * @returns {Promise<"DeviceNotFound"|"FailedToClear"|"Cleared">} Result of the operation
 	 */
 	clear_button(serial_number, key) {
@@ -614,7 +614,7 @@ class StreamduckClient {
 				ty: "clear_button",
 				data: {
 					serial_number,
-					key
+					key: parseInt(key)
 				}
 			}
 		)
@@ -635,7 +635,7 @@ class StreamduckClient {
 	/**
 	 * Copies button into daemon's clipboard
 	 * @param {string} serial_number Serial number of the device
-	 * @param {number} key Index of the key (0-255)
+	 * @param {number|string} key Index of the key (0-255)
 	 * @returns {Promise<"DeviceNotFound"|"NoButton"|"Copied">} Result of the operation
 	 */
 	copy_button(serial_number, key) {
@@ -644,7 +644,7 @@ class StreamduckClient {
 				ty: "copy_button",
 				data: {
 					serial_number,
-					key
+					key: parseInt(key)
 				}
 			}
 		)
@@ -653,7 +653,7 @@ class StreamduckClient {
 	/**
 	 * Pastes button from daemon's clipboard
 	 * @param {string} serial_number Serial number of the device
-	 * @param {number} key Index of the key (0-255)
+	 * @param {number|string} key Index of the key (0-255)
 	 * @returns {Promise<"DeviceNotFound"|"FailedToPaste"|"Pasted">} Result of the operation
 	 */
 	paste_button(serial_number, key) {
@@ -662,7 +662,7 @@ class StreamduckClient {
 				ty: "paste_button",
 				data: {
 					serial_number,
-					key
+					key: parseInt(key)
 				}
 			}
 		)
@@ -671,7 +671,7 @@ class StreamduckClient {
 	/**
 	 * Creates a new empty button, commit the change later with commit_changes in order for this to get saved
 	 * @param {string} serial_number Serial number of the device
-	 * @param {number} key Index of the key (0-255)
+	 * @param {number|string} key Index of the key (0-255)
 	 * @returns {Promise<"DeviceNotFound"|"FailedToCreate"|"Created">} Result of the operation
 	 */
 	new_button(serial_number, key) {
@@ -680,7 +680,7 @@ class StreamduckClient {
 				ty: "new_button",
 				data: {
 					serial_number,
-					key
+					key: parseInt(key)
 				}
 			}
 		)
@@ -689,7 +689,7 @@ class StreamduckClient {
 	/**
 	 * Creates a new button from component, commit the change later with commit_changes in order for this to get saved
 	 * @param {string} serial_number Serial number of the device
-	 * @param {number} key Index of the key (0-255)
+	 * @param {number|string} key Index of the key (0-255)
 	 * @param {string} component_name Component name
 	 * @returns {Promise<"DeviceNotFound"|"ComponentNotFound"|"FailedToCreate"|"Created">} Result of the operation
 	 */
@@ -699,7 +699,7 @@ class StreamduckClient {
 				ty: "new_button_from_component",
 				data: {
 					serial_number,
-					key,
+					key: parseInt(key),
 					component_name
 				}
 			}
@@ -709,7 +709,7 @@ class StreamduckClient {
 	/**
 	 * Adds component onto a button, commit the change later with commit_changes in order for this to get saved
 	 * @param {string} serial_number Serial number of the device
-	 * @param {number} key Index of the key (0-255)
+	 * @param {number|string} key Index of the key (0-255)
 	 * @param {string} component_name Component name
 	 * @returns {Promise<"DeviceNotFound"|"FailedToAdd"|"Added">} Result of the operation
 	 */
@@ -719,7 +719,7 @@ class StreamduckClient {
 				ty: "add_component",
 				data: {
 					serial_number,
-					key,
+					key: parseInt(key),
 					component_name
 				}
 			}
@@ -729,7 +729,7 @@ class StreamduckClient {
 	/**
 	 * Gets component values for component from a button
 	 * @param {string} serial_number Serial number of the device
-	 * @param {number} key Index of the key (0-255)
+	 * @param {number|string} key Index of the key (0-255)
 	 * @param {string} component_name Component name
 	 * @returns {Promise<?Array.<Value>>} Component values, null if component or device wasn't found
 	 */
@@ -739,7 +739,7 @@ class StreamduckClient {
 				ty: "get_component_values",
 				data: {
 					serial_number,
-					key,
+					key: parseInt(key),
 					component_name
 				}
 			}
@@ -755,7 +755,7 @@ class StreamduckClient {
 	/**
 	 * Adds element to component value, commit the change later with commit_changes in order for this to get saved
 	 * @param {string} serial_number Serial number of the device
-	 * @param {number} key Index of the key (0-255)
+	 * @param {number|string} key Index of the key (0-255)
 	 * @param {string} component_name Component name
 	 * @param {string} path Path to value
 	 * @returns {Promise<"DeviceNotFound"|"FailedToAdd"|"Added">} Result of the operation
@@ -766,7 +766,7 @@ class StreamduckClient {
 				ty: "add_component_value",
 				data: {
 					serial_number,
-					key,
+					key: parseInt(key),
 					component_name,
 					path
 				}
@@ -777,10 +777,10 @@ class StreamduckClient {
 	/**
 	 * Removes element from component value, commit the change later with commit_changes in order for this to get saved
 	 * @param {string} serial_number Serial number of the device
-	 * @param {number} key Index of the key (0-255)
+	 * @param {number|string} key Index of the key (0-255)
 	 * @param {string} component_name Component name
 	 * @param {string} path Path to value
-	 * @param {number} index Index of element
+	 * @param {number|string} index Index of element
 	 * @returns {Promise<"DeviceNotFound"|"FailedToRemove"|"Removed">} Result of the operation
 	 */
 	remove_component_value(serial_number, key, component_name, path, index) {
@@ -789,10 +789,10 @@ class StreamduckClient {
 				ty: "remove_component_value",
 				data: {
 					serial_number,
-					key,
+					key: parseInt(key),
 					component_name,
 					path,
-					index
+					index: parseInt(index)
 				}
 			}
 		)
@@ -801,7 +801,7 @@ class StreamduckClient {
 	/**
 	 * Sets component values for a component on a button, commit the change later with commit_changes in order for this to get saved
 	 * @param {string} serial_number Serial number of the device
-	 * @param {number} key Index of the key (0-255)
+	 * @param {number|string} key Index of the key (0-255)
 	 * @param {string} component_name Component name
 	 * @param {Value} value Value to set
 	 * @returns {Promise<"DeviceNotFound"|"FailedToSet"|"Set">} Result of the operation
@@ -812,7 +812,7 @@ class StreamduckClient {
 				ty: "set_component_value",
 				data: {
 					serial_number,
-					key,
+					key: parseInt(key),
 					component_name,
 					value
 				}
@@ -823,7 +823,7 @@ class StreamduckClient {
 	/**
 	 * Removes component from a button, commit the change later with commit_changes in order for this to get saved
 	 * @param {string} serial_number Serial number of the device
-	 * @param {number} key Index of the key (0-255)
+	 * @param {number|string} key Index of the key (0-255)
 	 * @param {string} component_name Component name 
 	 * @returns {Promise<"DeviceNotFound"|"FailedToRemove"|"Removed">} Result of the operation
 	 */
@@ -833,7 +833,7 @@ class StreamduckClient {
 				ty: "remove_component",
 				data: {
 					serial_number,
-					key,
+					key: parseInt(key),
 					component_name
 				}
 			}
@@ -961,7 +961,7 @@ class StreamduckClient {
 	/**
 	 * Simulates a key press on the device
 	 * @param {string} serial_number Serial number of the device
-	 * @param {number} key Index of the key (0-255)
+	 * @param {number|string} key Index of the key (0-255)
 	 * @returns {Promise<"DeviceNotFound"|"Activated">} Result of the operation
 	 */
 	do_button_action(serial_number, key) {
@@ -970,7 +970,7 @@ class StreamduckClient {
 				ty: "do_button_action",
 				data: {
 					serial_number,
-					key
+					key: parseInt(key)
 				}
 			}
 		)
