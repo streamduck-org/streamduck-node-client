@@ -251,6 +251,28 @@ class StreamduckClient {
 	}
 
 	/**
+	 * Gets current brightness of specified device
+	 * @param {string} serial_number Serial number of the device
+	 * @returns {Promise<?number>} Brightness value, or null if device wasn't found
+	 */
+	get_brightness(serial_number) {
+		return this.protocol.request(
+			{
+				ty: "get_brightness",
+				data: {
+					serial_number
+				}
+			}
+		).then(data => {
+			if (data.Brightness) {
+				return data.Brightness;
+			} else {
+				return null;
+			}
+		})
+	}
+
+	/**
 	 * Sets brightness of specified device
 	 * @param {string} serial_number Serial number of the device
 	 * @param {number|string} brightness Brightness value (integer 0-100 or higher)
