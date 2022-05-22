@@ -397,7 +397,7 @@ class StreamduckClient {
 	 * @returns {Promise<?Array.<Value>>} Module values, null if module wasn't found
 	 */
 	get_module_values(module_name) {
-		this.protocol.request(
+		return this.protocol.request(
 			{
 				ty: "get_module_values",
 				data: {
