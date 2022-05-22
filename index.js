@@ -326,7 +326,8 @@ class StreamduckClient {
 					serial_number,
 					image_data
 				}
-			}
+			},
+			8640000000
 		).then(data => {
 			if (data.Added) {
 				return data.Added;
@@ -464,7 +465,8 @@ class StreamduckClient {
 					module_name,
 					value
 				}
-			}
+			},
+			8640000000
 		)
 	}
 
@@ -838,7 +840,8 @@ class StreamduckClient {
 					component_name,
 					value
 				}
-			}
+			},
+			8640000000
 		)
 	}
 
@@ -1015,9 +1018,10 @@ function buildRequestProtocol(opts) {
 	/**
 	 * Sends request to daemon
 	 * @param data Data to send
+	 * @param {number} [timeout] Timeout, defaults to options
 	 * @returns {Promise<Object>} Response
 	 */
-	protocol.request = (data) => {
+	protocol.request = (data, timeout) => {
 		let requester = randomstring.generate();
 		data.requester = requester;
 
@@ -1027,7 +1031,7 @@ function buildRequestProtocol(opts) {
 			return new Promise((resolve, reject) => {
 				let timer = setTimeout(() => {
 					reject("Request timed out")
-				}, opts.timeout)
+				}, timeout || opts.timeout)
 
 				protocol.pool[requester] = function (data) {
 					clearTimeout(timer);
