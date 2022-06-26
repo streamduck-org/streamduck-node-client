@@ -1085,7 +1085,7 @@ exports.newUnixClient = function (opts) {
 			.on('connect', async () => {
 				let version = await streamduck.version();
 
-				let client_version = "0.1";
+				let client_version = "0.2";
 				if (version !== client_version)
 					console.log(`Daemon version doesn't match this client's version. Daemon is using ${version}, client is using ${client_version}`);
 
@@ -1149,13 +1149,12 @@ exports.newUnixClient = function (opts) {
 
 /**
  * Initializes a new Windows Named Pipes based Streamduck client
- * @param {{timeout: number?, reconnect: boolean?, events: boolean?}?} opts Options for client. timeout - Request timeout, default 5000; reconnect - Automatically reconnects to daemon, default true; events - Should event connection be made, default true;
+ * @param {{timeout: number?, reconnect: boolean?, events: boolean?}?} opts Options for client. timeout - Request timeout, default 5000; reconnect - Automatically reconnects to daemon, default true
  * @returns {StreamduckClient} Client that might still be connecting, check with is_connected method
  */
 exports.newWindowsClient = function (opts) {
 	let timeout = opts && opts.timeout !== undefined ? opts.timeout : 5000;
 	let reconnect = opts && opts.reconnect !== undefined ? opts.reconnect : true;
-	let events = opts && opts.events !== undefined ? opts.events : true;
 
 	let protocol_options = {
 		collected_string_request: "",
@@ -1169,10 +1168,10 @@ exports.newWindowsClient = function (opts) {
 	let streamduck = new StreamduckClient(protocol);
 
 	let rec = () => {
-		protocol_options.client = net.connect("\\\\.\\pipe\\streamduck_requests", async () => {
+		protocol_options.client = net.connect("\\\\.\\pipe\\streamduck", async () => {
 			let version = await streamduck.version();
 
-			let client_version = "0.1";
+			let client_version = "0.2";
 			if (version !== client_version)
 				console.log(`Daemon version doesn't match this client's version. Daemon is using ${version}, client is using ${client_version}`);
 
@@ -1188,13 +1187,19 @@ exports.newWindowsClient = function (opts) {
 							try {
 								let obj = JSON.parse(json);
 
-								let callback = protocol.pool[obj.requester];
+								if (obj.ty === "event") {
+									for(const listener of protocol.event_listeners) {
+										listener(obj.data)
+									}
+								} else {
+									let callback = protocol.pool[obj.requester];
 
-								if (callback) {
-									callback(obj.data);
+									if (callback) {
+										callback(obj.data);
+									}
+
+									delete protocol.pool[obj.requester];
 								}
-
-								delete protocol.pool[obj.requester];
 							} catch (e) {
 
 							}
@@ -1216,51 +1221,11 @@ exports.newWindowsClient = function (opts) {
 				}
 				protocol_options.client = null;
 			});
-
-		if(events) {
-			protocol_options.eventClient = net.connect("\\\\.\\pipe\\streamduck_events")
-				.on('data', data => {
-					data = data.toString();
-					protocol_options.collected_string_event += data;
-
-					if (protocol_options.collected_string_event.includes("\u0004")) {
-						protocol_options.collected_string_event.split("\u0004").forEach(json => {
-							if (json) {
-								try {
-									let obj = JSON.parse(json);
-
-									if (obj.ty === "event") {
-										for (const listener of protocol.event_listeners) {
-											listener(obj.data)
-										}
-									}
-								} catch (e) {
-
-								}
-							}
-						});
-
-						protocol_options.collected_string_event = "";
-					}
-				})
-				.on('error', _ => {
-					if (protocol_options.eventClient) {
-						protocol_options.eventClient.destroy()
-					}
-					protocol_options.eventClient = null;
-				})
-				.on('close', _ => {
-					if (protocol_options.eventClient) {
-						protocol_options.eventClient.destroy()
-					}
-					protocol_options.eventClient = null;
-				});
-		}
 	}
 
 	rec();
 	setInterval(() => {
-		if ((protocol_options.client == null && reconnect) || (protocol_options.eventClient == null && reconnect && events)) {
+		if (protocol_options.client == null && reconnect) {
 			rec();
 		}
 	}, 2000);
