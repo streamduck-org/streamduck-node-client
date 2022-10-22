@@ -16,4 +16,4 @@ await client.device_list()
 ```
 
 ## Documentation
-Documentation of the library can be found here: https://docs.streamduck.org/nodejs
+Documentation of the library can be found here: [API Reference](https://node.streamduck.org/)
