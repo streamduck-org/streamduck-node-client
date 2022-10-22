@@ -1,0 +1,26 @@
+name: Deploy Docs
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Build JSDoc
+        uses: andstor/jsdoc-action@v1
+        with:
+          source_dir: .
+          output_dir: ./out
+          config_file: .jsdoc.json
+      - name: Deploy branch
+        uses: s0/git-publish-subdir-action@develop
+        env:
+          REPO: self
+          BRANCH: gh-pages
+          FOLDER: ./out
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
