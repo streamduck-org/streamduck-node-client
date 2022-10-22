@@ -12,9 +12,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Getting node_modules
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
+        uses: bahmutov/npm-install@v1
       - name: Build JSDoc
         uses: andstor/jsdoc-action@v1
         with:
